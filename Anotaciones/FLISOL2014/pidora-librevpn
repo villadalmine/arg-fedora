@@ -1,0 +1,138 @@
+
+[root@raspi ~]# ll /etc/systemd/system/default.target 
+lrwxrwxrwx 1 root root 36 Jun 20  2013 /etc/systemd/system/default.target -> /lib/systemd/system/graphical.target
+[root@raspi ~]#  ll /lib/systemd/system/multi-user.target 
+-rw-r--r-- 1 root root 517 Feb 28  2013 /lib/systemd/system/multi-user.target
+[root@raspi ~]# 
+[root@raspi ~]# ll /etc/systemd/system/default.target 
+lrwxrwxrwx 1 root root 37 Mar 21 21:40 /etc/systemd/system/default.target -> /lib/systemd/system/multi-user.target
+[root@raspi ~]# 
+
+ para cambiar de un runlevel a otro graphical.target / multi-user.target --> systemctl isolate multi-user.target
+
+Configurar dns antes
+[root@raspi ~]# yum install git tinc
+Loaded plugins: langpacks, presto, refresh-packagekit
+
+
+
+
+[fedora@raspi ~]$ git clone https://github.com/villadalmine/librevpn.git
+Cloning into 'librevpn'...
+remote: Counting objects: 2202, done.
+remote: Compressing objects: 100% (1105/1105), done.
+remote: Total 2202 (delta 1063), reused 2202 (delta 1063)
+Receiving objects: 100% (2202/2202), 663.93 KiB | 253 KiB/s, done.
+Resolving deltas: 100% (1063/1063), done.
+[fedora@raspi ~]$ ./lvpn init rino
+-bash: ./lvpn: No such file or directory
+[fedora@raspi ~]$ cd librevpn/
+[fedora@raspi librevpn]$ ./lvpn init rino
+Los siguientes programas no se encuentran en PATH:gettext
+[fedora@raspi librevpn]$ ./lvpn init -i rino
+Los siguientes programas no se encuentran en PATH:gettext
+[fedora@raspi librevpn]$ 
+yum install gettext
+
+git checkout develop
+
+[fedora@villadalmine librevpn]$ ./lvpn init -i villadalmine
+> Creando villadalmine...
+> Creando /home/fedora/librevpn/nodos/villadalmine...
+> Generando /home/fedora/librevpn/nodos/villadalmine/hosts/villadalmine...
+> Determinando la IPv4 del nodo...
+> Generando IPv6...
+/home/fedora/librevpn/lib/common: line 190: armv6l-generate-ipv6-address: command not found
+> Añadiendo subredes...
+> Este nodo es un switch
+> Generando /home/fedora/librevpn/nodos/villadalmine/tinc.conf...
+> Añadiendo hosts...
+> Copiando el resto de archivos...
+> Generando llaves...
+Generating 4096 bits keys:
+.....++ p
+..++ q
+Done.
+> Guardando el archivo de host con los demás nodos
+> Instalando en el sistema...
+> Chequeando permisos...
+> Tip: Es necesario instalar nss-mdns para poder resolver nombres .local
+> El nodo se ha creado con éxito
+> *Importante*: 
+> * Envíe el archivo que representa su nodo a vpn@hackcoop.com.ar (/home/fedora/librevpn/nodos/villadalmine/hosts/villadalmine), o
+> * Comparta su nodo en la red local con `lvpn announce`
+> * Agregue /home/fedora/librevpn/nodos/villadalmine/hosts/villadalmine al repositorio git y publíquelo.
+[fedora@villadalmine librevpn]$ history
+    1  cd librevpn/
+    2  ./lvpn init -i villadalmine
+    3  history
+[fedora@villadalmine librevpn]$ cat .git/config 
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = https://github.com/villadalmine/librevpn.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+[fedora@villadalmine librevpn]$
+[fedora@villadalmine librevpn]$ ./lvpn install villadalmine
+> Instalando en el sistema...
+> Chequeando permisos...
+> Tip: Es necesario instalar nss-mdns para poder resolver nombres .local
+
+[fedora@villadalmine librevpn]$ 
+
+
+
+ystemctl --system daemon-reload
+[fedora@villadalmine librevpn]$ locate tinc|grep -i service
+/etc/systemd/system/multi-user.target.wants/tincd@lvpn.service
+/home/fedora/librevpn/lib/skel/tincd@.service
+[fedora@villadalmine librevpn]$
+[fedora@villadalmine librevpn]$ sudo cp /home/fedora/librevpn/lib/skel/tincd@.service /lib/systemd/system/tincd@lvpn.service
+[fedora@villadalmine librevpn]$ 
+[fedora@villadalmine librevpn]$ sudo systemctl status tincd@lvpn.service
+tincd@lvpn.service - Tinc daemon for net lvpn
+   Loaded: loaded (/usr/lib/systemd/system/tincd@lvpn.service; disabled)
+   Active: inactive (dead) since Wed 2014-04-23 23:29:55 ART; 5s ago
+  Process: 1370 ExecStart=/usr/sbin/tincd -n %i {{TINCD_FLAGS}} (code=exited, status=0/SUCCESS)
+ Main PID: 1371 (code=exited, status=0/SUCCESS)
+   CGroup: name=systemd:/system/tincd@.service/lvpn
+
+Apr 23 23:29:55 villadalmine systemd[1]: Started Tinc daemon for net lvpn.
+Apr 23 23:29:55 villadalmine tinc.lvpn[1371]: tincd 1.0.21 (Jul 11 2013 09:18:59) starting, debug level 0
+[fedora@villadalmine librevpn]$ 
+
+[fedora@restaurador ~]$ sudo systemctl enable tincd@lvpn.service
+ln -s '/usr/lib/systemd/system/tincd@lvpn.service' '/etc/systemd/system/multi-user.target.wants/tincd@lvpn.service'
+[fedora@restaurador ~]$ 
+
+
+
+
+
+mismoa pasos para el otro nodo
+
+sudores
+yum install gettext
+git clone
+./lvpn init -i restaurador
+./lvpn install restauradorkkkkk
+
+
+Ahora en villadalmine copiamos el host de restaurador y en restuarador compiamos el host de villadalmine
+
+desde villadalmine
+./lvpn add-host villadalmine restaurador
+[fedora@villadalmine librevpn]$ ./lvpn add-host villadalmine
+[fedora@villadalmine librevpn]$ ./lvpn install villadalmine
+> Instalando en el sistema...
+> Chequeando permisos...
+> Tip: Es necesario instalar nss-mdns para poder resolver nombres .local
+> Recargando tincd...
+[fedora@villadalmine librevpn]$ 
+
