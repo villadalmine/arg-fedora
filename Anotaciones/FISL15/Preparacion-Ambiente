@@ -1,0 +1,120 @@
+
+
+
+Prepare enviroment:
+
+Vm1 --> Install nfs
+
+yum install nfs-utils
+
+
+Iniciamos servicio:
+
+[root@localhost rrondan]# systemctl start nfs.service
+[root@localhost rrondan]# systemctl status nfs.service
+nfs-server.service - NFS Server
+   Loaded: loaded (/usr/lib/systemd/system/nfs-server.service; disabled)
+   Active: active (exited) since Sat 2014-04-19 10:39:19 ART; 5s ago
+  Process: 18037 ExecStartPost=/usr/libexec/nfs-utils/scripts/nfs-server.postconfig (code=exited, status=0/SUCCESS)
+  Process: 18011 ExecStart=/usr/sbin/rpc.nfsd $RPCNFSDARGS $RPCNFSDCOUNT (code=exited, status=0/SUCCESS)
+  Process: 18004 ExecStartPre=/usr/sbin/exportfs -r (code=exited, status=0/SUCCESS)
+  Process: 18002 ExecStartPre=/usr/libexec/nfs-utils/scripts/nfs-server.preconfig (code=exited, status=0/SUCCESS)
+ Main PID: 18011 (code=exited, status=0/SUCCESS)
+   CGroup: /system.slice/nfs-server.service
+
+
+Apr 19 10:39:19 localhost.localdomain systemd[1]: Started NFS Server.
+[root@localhost rrondan]# 
+
+
+Montamos disco de dvd
+
+[root@localhost rrondan]# mkdir -p /srv/nfs/Fedora20dvd
+[root@localhost rrondan]# mkdir -p /srv/nfs/Fedora18dvd
+[root@localhost rrondan]# 
+
+[root@localhost rrondan]# mount -o loop /home/rrondan/Downloads/Fedora-18-x86_64-DVD.iso /srv/nfs/Fedora18dvd/
+mount: /dev/loop0 is write-protected, mounting read-only
+[root@localhost rrondan]# 
+[root@localhost rrondan]# cat >> /etc/exports
+/srv/nfs/Fedora18dvd 192.168.200.0/24(ro,mountpoint)
+^C
+[root@localhost rrondan]# cat /etc/exports
+/srv/nfs/Fedora18dvd 192.168.200.0/24(ro,mountpoint)
+[root@localhost rrondan]# 
+[root@localhost rrondan]# exportfs -ra
+[root@localhost rrondan]# 
+[root@localhost rrondan]#  firewall-cmd  --permanent --add-service=nfs
+success
+[root@localhost rrondan]# 
+[root@localhost rrondan]# firewall-cmd --zone=public --add-interface=virbr1
+success
+[root@localhost rrondan]# 
+[root@localhost rrondan]# firewall-cmd --list-all --zone=public
+public (default, active)
+  interfaces: virbr1 wlp9s0
+  sources: 
+  services: dhcpv6-client mdns nfs ssh
+  ports: 5353/udp 1900/udp 8200/tcp 5001/udp
+  masquerade: no
+  forward-ports: 
+  icmp-blocks: 
+  rich rules: 
+	
+[root@localhost rrondan]# 
+
+Preparamos --> Vm2
+
+[root@restaurador ~]# yum install nfs-utils -y
+[root@restaurador ~]# echo "192.168.200.1:/srv/nfs/Fedora18dvd   /srv/repos/Fedora18   nfs   rw  0 0" >> /etc/fstab 
+[root@restaurador ~]# mkdir -p /srv/repos/Fedora18
+[root@restaurador ~]# 
+
+[root@restaurador ~]# mount /srv/repos/Fedora18/
+[root@restaurador ~]# df -h /srv/repos/Fedora18/
+Filesystem                          Size  Used Avail Use% Mounted on
+192.168.200.1:/srv/nfs/Fedora18dvd  4.3G  4.3G     0 100% /srv/repos/Fedora18
+[root@restaurador ~]# 
+
+
+
+vm3
+
+[root@JuanManuelDeRosas ~]# mkdir -p /srv/repos/Fedora18d
+[root@JuanManuelDeRosas ~]# echo "192.168.200.1:/srv/nfs/Fedora18dvd   /srv/repos/Fedora18   nfs   rw  0 0" >> /etc/fstab
+[root@JuanManuelDeRosas ~]# 
+
+[root@JuanManuelDeRosas ~]# df -h /srv/repos/Fedora18/
+S.ficheros                         Tamaño Usados  Disp Uso% Montado en
+192.168.200.1:/srv/nfs/Fedora18dvd   4,3G   4,3G     0 100% /srv/repos/Fedora18
+[root@JuanManuelDeRosas ~]# 
+
+[root@JuanManuelDeRosas yum.repos.d]# cat >> fedora-Media.repo
+[fedora18-dvd]
+name=Fedora-$releasever - Media
+baseurl=file:///srv/repos/Fedora18
+gpgcheck=1
+enabled=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora
+^C
+[root@JuanManuelDeRosas yum.repos.d]# 
+
+
+
+[root@JuanManuelDeRosas yum.repos.d]# yum --disablerepo=\* --enablerepo=fedora18-dvd search  tftp
+Complementos cargados:langpacks, presto, refresh-packagekit
+fedora18-dvd                                                                                            | 3.7 kB  00:00:00 !!! 
+====================================================== Concordante: tftp ======================================================
+apache-commons-net.noarch : Internet protocol suite Java library
+curl.x86_64 : A utility for getting files from remote servers (FTP, HTTP, and others)
+libcurl.x86_64 : A library for getting files from web servers
+tcp_wrappers.x86_64 : A security tool which acts as a wrapper for TCP daemons
+[root@JuanManuelDeRosas yum.repos.d]# 
+
+
+
+
+
+
+
+

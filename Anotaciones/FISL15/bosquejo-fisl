@@ -1,0 +1,16 @@
+#
+
+Instalacion de Ambiente de Virtualizacion
+dnf install yumex
+dnf install @virtualization
+
+# Uso de Gnome Boxes
+Mostrar como se usa.
+Paso a paso crear vm
+Mostrar modo automatico
+modo Manual
+Borrar maquinas
+Configurarlas
+Conectarse de forma remota
+Ver como lee los cd/dvd que hay en la ruta
+Mostrar archivos de configurar por linea de comando

@@ -1,0 +1,61 @@
+#debmirror Fedora
+#
+#rsync -aqvzH --delete rsync://mirror.nexicom.net/Fedora/releases/20/Fedora/i386/os/ /home/fedora/20/os/i386/
+#rsync -aqzvH --delete rsync://mirror.nexicom.net/Fedora/releases/20/Fedora/x86_64/os/ /home/fedora/20/os/x86_64/
+#boot
+mkdir -p /home/tftp/boot/fedora/20/{x86_64,i386}
+wget -P /home/tftp/boot/fedora/20/x86_64/ http://fedora.mirror.nexicom.net/linux/releases/20/Fedora/x86_64/os/isolinux/vmlinuz
+wget -P /home/tftp/boot/fedora/20/x86_64/ http://fedora.mirror.nexicom.net/linux/releases/20/Fedora/x86_64/os/isolinux/initrd.img
+wget -P /home/tftp/boot/fedora/20/i386/ http://fedora.mirror.nexicom.net/linux/releases/20/Fedora/i386/os/isolinux/vmlinuz
+wget -P /home/tftp/boot/fedora/20/i386/ http://fedora.mirror.nexicom.net/linux/releases/20/Fedora/i386/os/isolinux/initrd.img
+
+
+
+
+mkdir -p /srv/tftp/boot/fedora/20/{x86_64,i386}
+wget -P /srv/tftp/boot/fedora/20/x86_64/ http://fedora.mirror.nexicom.net/linux/releases/20/Fedora/x86_64/os/isolinux/vmlinuz
+wget -P /srv/tftp/boot/fedora/20/x86_64/ http://fedora.mirror.nexicom.net/linux/releases/20/Fedora/x86_64/os/isolinux/initrd.img
+wget -P /srv/tftp/boot/fedora/20/i386/ http://fedora.mirror.nexicom.net/linux/releases/20/Fedora/i386/os/isolinux/vmlinuz
+wget -P /srv/tftp/boot/fedora/20/i386/ http://fedora.mirror.nexicom.net/linux/releases/20/Fedora/i386/os/isolinux/initrd.im
+
+
+
+
+#installer.conf
+
+menu begin Fedora
+menu title Fedora
+        label Previous
+        menu label Previous menu
+        text help
+        Return to previous menu
+        endtext
+        menu exit
+        menu separator
+
+	## Esta opción es para proveer el iso completo mediante PXE, pero es lento por que se copia en su totalidad a la PC cliente.
+	# label Centos 6.5 i386
+	# kernel http://192.168.122.1/tftp/memdisk
+	# initrd http://192.168.122.1/iso/CentOS-6.5-i386-netinstall.iso
+	# append iso raw 
+
+	label Fedora 20 i386 (Text installer)
+        kernel boot/fedora/20/i386/vmlinuz
+	append initrd=boot/fedora/20/i386/initrd.img text lang=en_US.UTF-8 keymap=la-latin1 selinux=0 ip=dhcp ksdevice=bootif resolution=800x600 repo=http://192.168.122.1/fedora/20/os/i386
+
+	label Fedora 20 x86_64 (Text installer)
+        kernel boot/fedora/20/x86_64/vmlinuz
+	append initrd=boot/fedora/20/x86_64/initrd.img text lang=en_US.UTF-8 keymap=la-latin1 selinux=0 ip=dhcp ksdevice=bootif resolution=800x600 repo=http://192.168.122.1/fedora/20/os/x86_64
+
+
+	menu SEPARATOR
+
+	label Fedora 20 i386 (Graphical installer)
+        kernel boot/fedora/20/i386/vmlinuz
+	append initrd=boot/fedora/20/i386/initrd.img graphical lang=en_US.UTF-8 keymap=la-latin1 selinux=0 ip=dhcp ksdevice=bootif resolution=1027x768 repo=http://192.168.122.1/fedora/20/os/i386
+
+	label Fedora 20 x86_64 (Graphical installer)
+        kernel boot/fedora/20/x86_64/vmlinuz
+	append initrd=boot/fedora/20/x86_64/initrd.img graphical lang=en_US.UTF-8 keymap=la-latin1 selinux=0 ip=dhcp ksdevice=bootif resolution=1024x768 repo=http://192.168.122.1/fedora/20/os/x86_64
+menu end
+

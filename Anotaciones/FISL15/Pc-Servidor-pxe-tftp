@@ -1,0 +1,164 @@
+Pasos configurar el equipo host como pxe-tftp.
+
+#Configurar bien la red por defecto de kvm.
+
+LIstamos las redes que tenemos disponibles en nuestro equipo:
+
+[root@localhost rrondan]# virsh net-list
+ Name                 State      Autostart     Persistent
+----------------------------------------------------------
+ default              active     yes           yes
+ virbr0               active     yes           yes
+ virbr1               active     yes           yes
+
+[root@localhost rrondan]# 
+
+Ahora vamos a agregar una:
+
+Copiamos el contendio de una existente:
+
+[root@localhost rrondan]# virsh net-dumpxml virbr1
+<network connections='2'>
+  <name>virbr1</name>
+  <uuid>f48a4615-6ea7-46f5-a4c3-614dea4b9d5f</uuid>
+  <forward dev='wlp9s0' mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+    <interface dev='wlp9s0'/>
+  </forward>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='52:54:00:96:ef:77'/>
+  <domain name='virb1'/>
+  <ip address='192.168.200.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.200.128' end='192.168.200.254'/>
+    </dhcp>
+  </ip>
+</network>
+
+[root@localhost rrondan]# 
+
+[root@localhost rrondan]# cp /etc/libvirt/qemu/networks/virbr1.xml /etc/libvirt/qemu/networks/install.xml
+
+[root@localhost rrondan]# cat /etc/libvirt/qemu/networks/install.xml
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh net-edit install
+or other application using the libvirt API.
+-->
+
+<network>
+  <name>install</name>
+  <uuid>b503239f-f21c-4a5a-9199-7f0d202ae81e</uuid>
+  <forward dev='wlp9s0' mode='nat'>
+    <interface dev='wlp9s0'/>
+  </forward>
+  <bridge name='install' stp='on' delay='0'/>
+  <mac address='52:54:00:96:ef:77'/>
+  <domain name='install'/>
+  <ip address='192.168.50.1' netmask='255.255.255.0'>
+    <tftp root='/srv/tftp'/>
+    <dhcp>
+      <range start='192.168.50.128' end='192.168.50.254'/>
+      <bootp file='pxelinux.0'/>
+    </dhcp>
+  </ip>
+</network>
+[root@localhost rrondan]# 
+
+
+[root@localhost rrondan]# virsh net-define /etc/libvirt/qemu/networks/install.xml 
+Network install defined from /etc/libvirt/qemu/networks/install.xml
+
+[root@localhost rrondan]#
+
+
+Va a estar desactivada..
+
+virsh # net-list --all
+ Name                 State      Autostart     Persistent
+----------------------------------------------------------
+ default              active     yes           yes
+ install              inactive   no            yes
+ virbr0               active     yes           yes
+ virbr1               active     yes           yes
+
+virsh # 
+
+MIRAR SELINUX PARA ACTIARLO
+semanage fcontext -a -t public_content_t "/srv/tftp(/.*)?"
+restorecon -F -R -v /srv/tftp
+[root@localhost srv]# virsh net-start install
+Network install started
+
+[root@localhost srv]# 
+
+[root@localhost srv]# virsh net-autostart install
+Network install marked as autostarted
+
+[root@localhost srv]# virsh net-list --all
+ Name                 State      Autostart     Persistent
+----------------------------------------------------------
+ default              active     yes           yes
+ install              active     yes           yes
+ virbr0               active     yes           yes
+ virbr1               active     yes           yes
+
+[root@localhost srv]# 
+
+
+[root@localhost tftp]# mkdir /srv/tftp/pxelinux.cfg 
+[root@localhost tftp]# cp /usr/share/syslinux/pxelinux.0 /srv/tftp/
+[root@localhost tftp]# mkdir /srv/tftp/fedora18
+[root@localhost tftp]# cp /srv/nfs/Fedora18dvd/images/pxeboot/vmlinuz  /srv/tftp/fedora18/
+[root@localhost tftp]# cp /srv/nfs/Fedora18dvd/images/pxeboot/initrd.img  /srv/tftp/fedora18/
+[root@localhost tftp]# cp /usr/share/syslinux/menu.c32 /srv/tftp/
+
+
+#centos
+[root@localhost tftp]# cp /usr/share/syslinux/gpxelinux.0 /srv/tftp/
+[root@localhost tftp]# cp /usr/share/syslinux/menu.c32 /srv/tftp/
+
+
+
+Bajar los dvd's de las distros que necesitemos.
+
+#Fedora
+mount -o loop *.iso /mnt
+cp -vR /mnt/* /var/www/pub
+mkdir /var/www/pub/kickstart
+touch /var/www/pub/kickstart/redhat-base.cfg
+
+mkdir -p /srv/tftp/{images,pxelinux.cfg}
+cp /var/www/pub/images/pxeboot/vmlinuz /srv/tftp/images
+cp /var/www/pub/images/pxeboot/initrd.img /srv/tftp/images
+# yum install -y syslinux
+
+cp /usr/share/syslinux/menu.c32 /srv/tftp
+cp /usr/share/syslinux/pxelinux.0 /srv/tftp
+cat /tftpboot/pxelinux.cfg/default
+
+
+
+
+#Cenos
+mount -o loop *.iso /mnt
+cp -vR /mnt/* /var/www/centos
+mkdir /var/www/centos/kickstart
+touch /var/www/centos/kickstart/redhat-base.cfg
+
+mkdir -p /srv/tftp/{images,pxelinux.cfg}
+cp /var/www/centos/images/pxeboot/vmlinuz /srv/tftp/images/centos
+cp /var/www/centos/images/pxeboot/initrd.img /srv/tftp/images/centos
+# yum install -y syslinux
+
+cp /usr/share/syslinux/menu.c32 /srv/tftp
+cp /usr/share/syslinux/pxelinux.0 /srv/tftp
+cat /tftpboot/pxelinux.cfg/default
+
+[root@localhost tftp]# sudo yum install fedora-kickstarts.noarch rpmfusion-free-remix-kickstarts.noarch rpmfusion-nonfree-remix-kickstarts.noarch  system-config-kickstart.noarch pykickstart.noarch  custom-kickstarts.noarch
+
+
+
