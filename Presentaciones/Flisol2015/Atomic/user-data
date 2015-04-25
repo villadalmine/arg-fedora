@@ -1,5 +1,5 @@
 #cloud-config
-password: sasoconf
+password: flisol2015
 ssh_pwauth: True
 chpasswd: { expire: False }
 
