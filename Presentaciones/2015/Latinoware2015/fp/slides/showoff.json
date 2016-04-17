@@ -1,0 +1,14 @@
+{
+  "name": "Fedora Packaging",
+  "description": "Latinoware 2015 Fedora Package",
+  "protected": ["presenter", "onepage", "print"],
+  "user": "edrans",
+  "password": "3dr4ns",
+  "version": "0.9.10.7",
+  "feedback": false,
+  "highlight": "atelier-cave.light",
+  "sections": [
+
+  "Intro.md"
+  ]
+}

@@ -1,0 +1,8 @@
+Installing             Done                                               [100%] [....................................................]
+  Something went wrong! Check the log for ERROR-level output
+  * Foreman is running at https://training.puppetlabs.vm
+      Initial credentials are admin / boCtMGZLeUH3qXXU
+  * Foreman Proxy is running at https://training.puppetlabs.vm:8443
+  * Puppetmaster is running at port 8140
+  The full log is at /var/log/foreman-installer/foreman-installer.log
+

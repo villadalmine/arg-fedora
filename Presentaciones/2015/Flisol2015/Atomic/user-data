@@ -1,0 +1,7 @@
+#cloud-config
+password: flisol2015
+ssh_pwauth: True
+chpasswd: { expire: False }
+
+ssh_authorized_keys: 
+  - ssh-rsa ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDwaaG9lhg6/1byh0bxCiLoTK5bmAJG/nOX0n5iRu9tRtiKKuNeGKXxU5iyzsMy0kP6Xl/t1pKNJ3x2P8yu0S7wbGz2nHKF0o6GzwHLCJd64EvtaPkKlVZNXMPn09niN2I/dyY9c16Q+FCpX/NXjpbW0KgzWzARRCELOBd3Xju+qsI3LIfjBvzaOI1p18PWcawkgbfMVAaUouJD/xwHWL2W5GtrT2ia5Lt0yDnKmqbeb8ukoYe1dioCrUVF2w7+3SPgizjGt2p5EuoRb1MJzqHtuZ3XWzMUTaZpdLYpfg2wpX/1jUNNfYWls4gXXi8n7l+SPnEbBmX4VP+KC/iHiJGZ rino@oc7287280510.ibm.com
