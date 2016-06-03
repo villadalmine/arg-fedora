@@ -1,0 +1,31 @@
+echo "Switch to disabled"
+/etc/selinux/config to permissive
+echo "prevenir cambios al vuelo"
+setsebool -P secure_mode_policyload on
+echo "habilitar grub"
+kernel selinux=1 enforcing=0
+check /boot/config selinux_bootparam selinux_develop
+echo "listar permisive"
+semanage permisive -l
+echo "setear permisivo"
+semanage permisive -a httpd_t
+echo "mirar libselinux"
+ldd /bin/ls
+
+
+que rompi
+agrege modo permisivo redis httpd vsftd squid
+puse en permissivo
+
+[root@selinux files]# semanage port -l | grep -w http_port_t
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+my/wevbsite
+chcon -R -t httpd_sys_content_t /my/
+semanage fcontext -a -t httpd_sys_content_t "/my(/.*)?"
+restorecon -R -v /my/
+setsebool -P httpd_use_nfs on
+ setsebool -P httpd_use_cifs on
+semanage fcontext -a -t public_content_t "/shares(/.*)?"
+setsebool -P samba_export_all_ro on
+ setsebool -P ftp_home_dir=1
+setsebool -P ftpd_anon_write 
